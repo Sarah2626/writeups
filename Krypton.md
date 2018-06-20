@@ -1,5 +1,4 @@
-
-Documenting a walkthrough of the [Krypton](http://overthewire.org/wargames/krypton/) web challenge on OverTheWire.org.  
+# New DocumentDocumenting a walkthrough of the [Krypton](http://overthewire.org/wargames/krypton/) web challenge on OverTheWire.org.  
 
 This is mostly following the writeup by Matt Stiles [nsimattstiles.wordpress.com/2014/04/30/overthewire-krypton-level-0-5-writeup/](http://nsimattstiles.wordpress.com/2014/04/30/overthewire-krypton-level-0-5-writeup/).  All of his solutions are shown in python.
 
@@ -317,7 +316,7 @@ Use the password to log into the sixth level.  Note that the password does not c
 
     ssh krypton6@krypton.labs.overthewire.org
 
-I've not completed this level.
+
 
 ## The Challenge ##
 
@@ -412,3 +411,69 @@ I've not completed this level.
     The password for level 7 (krypton7) is encrypted with 'encrypt6'.
 
     Good Luck!
+## Solutions ##
+
+For the next section it is highly advisable to create a link of **encrypt6** and **keyfile.dat** in a working directory.
+\
+Using the **encrypt6** binary we can encrypt strings as follows:
+
+
+	$ echo AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    AAAAAAAAAAA | hexdump -C > foo
+    $./encrypt6 foo bar
+    $cat bar
+    EICTDGYIYZKTHNSIRFXYCPFUEO
+ The README already told us that the encryption algorithm is generally weak. Our given string was a lot bigger then encrypted string. So instead I tried:
+ 
+	$ python3 script.py AB out
+    encrypting 15*'A' in out
+    encrypting 15*'B' in out
+    $cat out
+    EICTDGYIYZKTHNS
+    EJDUEHZJZALUIOTJ
+    
+And we notice a pattern, the i-th characters were simply shifted to the right.
+So as a hypothesis we conclude that a random number generator always adds the same number to the i-th letter. This lets us create a lookup-table for the i-th letter. **script.py** simply encrypts 30*'A', followed by 30*'B' and so on and so forth. 
+	
+    $python3 sript.py ABCDEFGHIJKLMNOPQRSTUVWXYZ
+   	storing lookup table in out
+    cat out
+    A: EICTDGYIYZKTHNSIRFXYCPFUEOCKRN
+	B: FJDUEHZJZALUIOTJSGYZDQGVFPDLSO
+	C: GKEVFIAKABMVJPUKTHZAERHWGQEMTP
+	D: HLFWGJBLBCNWKQVLUIABFSIXHRFNUQ
+	E: IMGXHKCMCDOXLRWMVJBCGTJYISGOVR
+	F: JNHYILDNDEPYMSXNWKCDHUKZJTHPWS
+	G: KOIZJMEOEFQZNTYOXLDEIVLAKUIQXT
+	H: LPJAKNFPFGRAOUZPYMEFJWMBLVJRYU
+	I: MQKBLOGQGHSBPVAQZNFGKXNCMWKSZV
+	J: NRLCMPHRHITCQWBRAOGHLYODNXLTAW
+	K: OSMDNQISIJUDRXCSBPHIMZPEOYMUBX
+	L: PTNEORJTJKVESYDTCQIJNAQFPZNVCY
+	M: QUOFPSKUKLWFTZEUDRJKOBRGQAOWDZ
+	N: RVPGQTLVLMXGUAFVESKLPCSHRBPXEA
+	O: SWQHRUMWMNYHVBGWFTLMQDTISCQYFB
+	P: TXRISVNXNOZIWCHXGUMNREUJTDRZGC
+	Q: UYSJTWOYOPAJXDIYHVNOSFVKUESAHD
+	R: VZTKUXPZPQBKYEJZIWOPTGWLVFTBIE
+	S: WAULVYQAQRCLZFKAJXPQUHXMWGUCJF
+	T: XBVMWZRBRSDMAGLBKYQRVIYNXHVDKG
+	U: YCWNXASCSTENBHMCLZRSWJZOYIWELH
+	V: ZDXOYBTDTUFOCINDMASTXKAPZJXFMI
+	W: AEYPZCUEUVGPDJOENBTUYLBQAKYGNJ
+	X: BFZQADVFVWHQEKPFOCUVZMCRBLZHOK
+	Y: CGARBEWGWXIRFLQGPDVWANDSCMAIPL
+	Z: DHBSCFXHXYJSGMRHQEWXBOETDNBJQM
+Thus we can lookup the i-th letter in the i-th column and the resulting row should be our original letter! Decrypting the password with a simple script gives us
+	
+    $python3 decrypt.py out
+    LFSRISNOTRANDOM
+Further inspection could also have shown that the encryption is repeating itself after 30 repetitions of the same character, what means we can decrypt messages of arbitrary length. 
+
+## Conclusion ##
+Now finally we can ssh one last time:
+	
+    $ssh krypton7@localhost
+and provide the last password.
+
+Congratulations 🎉🎉🎉
